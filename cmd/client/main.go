@@ -20,25 +20,38 @@ func main() {
 	defer conn.Close()
 	fmt.Println("Starting Peril client...")
 
+	channel, err := conn.Channel()
+
 	uname, err := gamelogic.ClientWelcome()
 	if err != nil {
 		log.Fatalf("error logging in: %v", err)
 		return
 	}
 
+	gs := gamelogic.NewGameState(uname)
+	gamelogic.PrintClientHelp()
+
 	exchange := routing.ExchangePerilDirect
 	queueName := routing.PauseKey + "." + uname
 	routingKey := routing.PauseKey
 	queueType := pubsub.Transient
 
-	_, _, err = pubsub.DeclareAndBind(conn, exchange, queueName, routingKey, queueType)
+	err = pubsub.SubscribeJSON(conn, exchange, queueName, routingKey, queueType, handlerPause(gs))
 	if err != nil {
-		log.Fatalf("error declaring and binding queue: %v", err)
+		log.Fatalf("error subscribing to pause queue: %v", err)
 		return
 	}
 
-	gs := gamelogic.NewGameState(uname)
-	gamelogic.PrintClientHelp()
+	exchange = routing.ExchangePerilTopic
+	queueName = routing.ArmyMovesPrefix + "." + uname
+	routingKey = routing.ArmyMovesPrefix + ".*"
+	queueType = pubsub.Transient
+
+	err = pubsub.SubscribeJSON(conn, exchange, queueName, routingKey, queueType, handlerMove(gs))
+	if err != nil {
+		log.Fatalf("error subscribing to army_moves queue: %v", err)
+		return
+	}
 
 	for ;; {
 		words := gamelogic.GetInput()
@@ -47,10 +60,15 @@ func main() {
 		}
 		switch words[0] {
 		case "move":
-			_, err := gs.CommandMove(words)
+			mv, err := gs.CommandMove(words)
 			if err != nil {
 				fmt.Println(err)
 				continue
+			}
+			err = pubsub.PublishJSON(channel, exchange, queueName, mv)
+			if err != nil {
+				log.Fatalf("error publishing move: %v", err)
+				return
 			}
 		case "spawn":
 			err = gs.CommandSpawn(words)
