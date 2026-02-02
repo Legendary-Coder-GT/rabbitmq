@@ -7,6 +7,8 @@ import (
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
 	"log"
+	"strconv"
+	"time"
 )
 
 func main() {
@@ -87,7 +89,19 @@ func main() {
 		case "help":
 			gamelogic.PrintClientHelp()
 		case "spam":
-			fmt.Println("Spamming not allowed yet!")
+			if len(words) != 2 {
+				continue
+			}
+			val, _ := strconv.Atoi(words[1])
+			for i := 0; i < val; i++ {
+				msg := gamelogic.GetMaliciousLog()
+				gl := routing.GameLog{
+					CurrentTime: time.Now(),
+					Message:	 msg,
+					Username:	 uname,
+				}
+				pubsub.PublishGob(channel, exchange, routing.GameLogSlug + "." + uname, gl)
+			}
 		case "quit":
 			gamelogic.PrintQuit()
 			return

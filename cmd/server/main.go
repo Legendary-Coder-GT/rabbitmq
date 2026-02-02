@@ -42,6 +42,9 @@ func main() {
 
 	for ;; {
 		input := gamelogic.GetInput()
+		if len(input) == 0 {
+			continue
+		}
 		cmd := input[0]
 
 		if cmd == "pause" {
