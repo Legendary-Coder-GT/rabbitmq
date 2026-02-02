@@ -1,6 +1,6 @@
 # Peril: A RabbitMQ Pub/Sub Strategy Game
 
-A multiplayer strategy game demonstrating publish-subscribe architecture using RabbitMQ. Players spawn military units, move them across continents, and engage in battles when units occupy the same location. This project was built as part of the [Boot.dev Learn Pub/Sub course](https://learn.boot.dev/learn-pub-sub).
+A multiplayer strategy game demonstrating publish-subscribe architecture using RabbitMQ. Players spawn military units, move them across continents, and engage in battles when units occupy the same location. This project was built as part of the [Boot.dev Learn Pub/Sub course](https://www.boot.dev/courses/learn-pub-sub-rabbitmq-golang).
 
 ## Architecture Overview
 
@@ -420,7 +420,7 @@ docker stop peril_rabbitmq
 
 ## Credits
 
-Built by Anu Raghavan as part of the [Boot.dev Pub/Sub course](https://learn.boot.dev/learn-pub-sub).
+Built by Anu Raghavan as part of the [Boot.dev Pub/Sub course](https://www.boot.dev/courses/learn-pub-sub-rabbitmq-golang).
 
 ## License
 
