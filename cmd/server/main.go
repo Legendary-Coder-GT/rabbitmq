@@ -34,6 +34,12 @@ func main() {
 		return
 	}
 
+	err = pubsub.SubscribeGob(conn, exchange, queueName, routingKey, queueType, handlerLogs())
+	if err != nil {
+		log.Fatalf("error subscribing to game_logs queue: %v", err)
+		return
+	}
+
 	for ;; {
 		input := gamelogic.GetInput()
 		cmd := input[0]

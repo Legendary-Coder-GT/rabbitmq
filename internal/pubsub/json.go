@@ -4,7 +4,14 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"encoding/json"
 	"context"
-	"log"
+)
+
+type AckType int 
+
+const (
+	Ack AckType = iota
+	NackRequeue
+	NackDiscard
 )
 
 func PublishJSON[T any](ch *amqp.Channel, exchange, key string, val T) error {
@@ -27,31 +34,17 @@ func SubscribeJSON[T any](
     queueName,
     key string,
     queueType SimpleQueueType, // an enum to represent "durable" or "transient"
-    handler func(T),
+    handler func(T) AckType,
 ) error {
-	channel, queue, err := DeclareAndBind(conn, exchange, queueName, key, queueType)
+	err := subscribe(conn, exchange, queueName, key, queueType, handler, jsonUnmarshaller)
 	if err != nil {
 		return err
 	}
-
-	ch, err := channel.Consume(queue.Name, "", false, false, false, false, nil)
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		for delivery := range ch {
-			var msg T
-			err := json.Unmarshal(delivery.Body, &msg)
-			if err != nil {
-				log.Print(err)
-				delivery.Ack(false)
-				continue
-			}
-			handler(msg)
-			delivery.Ack(false)
-		}
-	}()
-
 	return nil
+}
+
+func jsonUnmarshaller[T any](data []byte) (T, error) {
+	var msg T
+	err := json.Unmarshal(data, &msg)
+	return msg, err
 }

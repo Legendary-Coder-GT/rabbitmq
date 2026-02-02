@@ -8,10 +8,10 @@ import (
 	"fmt"
 )
 
-func handlerPause(gs *gamelogic.GameState) func(routing.PlayingState) pubsub.AckType {
+func handlerLogs() func(routing.GameLog) pubsub.AckType {
 	defer fmt.Print(">")
-	return func(ps routing.PlayingState) pubsub.AckType {
-		gs.HandlePause(ps)
+	return func(gl routing.GameLog) pubsub.AckType {
+		gamelogic.WriteLog(gl)
 		return pubsub.Ack
 	}
 }

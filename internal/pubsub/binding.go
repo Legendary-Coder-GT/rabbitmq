@@ -25,11 +25,16 @@ func DeclareAndBind(
 
 	var queue amqp.Queue
 
-	if queueType == Durable {
-		queue, err = channel.QueueDeclare(queueName, true, false, false, false, nil)
-	} else {
-		queue, err = channel.QueueDeclare(queueName, false, true, true, false, nil)
-	}
+	queue, err = channel.QueueDeclare(
+		queueName,
+		queueType == Durable,
+		queueType != Durable,
+		queueType != Durable,
+		false,
+		amqp.Table{
+			"x-dead-letter-exchange": "peril_dlx",
+		},
+	)
 	if err != nil {
 		return channel, amqp.Queue{}, err
 	}

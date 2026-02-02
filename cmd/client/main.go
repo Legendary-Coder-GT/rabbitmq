@@ -53,6 +53,12 @@ func main() {
 		return
 	}
 
+	err = pubsub.SubscribeJSON(conn, exchange, "war", routing.WarRecognitionsPrefix + ".*", pubsub.Durable, handlerWar(gs))
+	if err != nil {
+		log.Fatalf("error subscribing to war queue: %v", err)
+		return
+	}
+
 	for ;; {
 		words := gamelogic.GetInput()
 		if len(words) == 0 {
